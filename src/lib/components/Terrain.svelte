@@ -40,10 +40,12 @@
 	const grassTexture = loadTexture('/textures/grass-texture.jpg')
 	const dirtTexture = loadTexture('/textures/dirt-texture.png')
 	const stoneTexture = loadTexture('/textures/stone-texture.png')
+	const bedrockTexture = loadTexture('/textures/bedrock.png')
 
 	const grassTopMaterial = new MeshStandardMaterial({ map: grassTexture })
 	const dirtMaterial = new MeshStandardMaterial({ map: dirtTexture })
 	const stoneMaterial = new MeshStandardMaterial({ map: stoneTexture })
+	const bedrockMaterial = new MeshStandardMaterial({ map: bedrockTexture })
 
 	const grassMaterials = [
 		dirtMaterial,
@@ -57,12 +59,16 @@
 	let grassMesh: InstancedMesh | null = $state(null)
 	let dirtMesh: InstancedMesh | null = $state(null)
 	let stoneMesh: InstancedMesh | null = $state(null)
+	let bedrockMesh: InstancedMesh | null = $state(null)
+
+	const bedrockY = -2
 
 	const totalSize = chunkSize * (renderDistance * 2 + 1)
 	// Blocos extras para os expostos por remoção
 	const totalBlocks = totalSize * totalSize + 500
 
-	const getBlockMaterial = (y: number): 'grass' | 'dirt' | 'stone' => {
+	const getBlockMaterial = (y: number): 'grass' | 'dirt' | 'stone' | 'bedrock' => {
+		if (y <= bedrockY) return 'bedrock'
 		if (y <= 1) return 'stone'
 		if (y <= 3) return 'dirt'
 		return 'grass'
@@ -75,8 +81,8 @@
 		for (const key of removedBlocks) {
 			const [rx, ry, rz] = key.split(',').map(Number)
 
-			// Bloco abaixo
-			if (ry > 0 && !isBlockRemoved(rx, ry - 1, rz)) {
+			// Bloco abaixo (até bedrock)
+			if (ry - 1 >= bedrockY && !isBlockRemoved(rx, ry - 1, rz)) {
 				exposed.push({ x: rx, y: ry - 1, z: rz })
 			}
 
@@ -91,7 +97,7 @@
 			for (const n of neighbors) {
 				const neighborHeight = getHeight(n.x, n.z)
 				// Se o vizinho tem bloco nessa altura e não foi removido
-				if (ry <= neighborHeight && !isBlockRemoved(n.x, ry, n.z)) {
+				if (ry <= neighborHeight && ry >= bedrockY && !isBlockRemoved(n.x, ry, n.z)) {
 					exposed.push({ x: n.x, y: ry, z: n.z })
 				}
 			}
@@ -101,7 +107,7 @@
 	}
 
 	const updateTerrain = () => {
-		if (!grassMesh || !dirtMesh || !stoneMesh) return
+		if (!grassMesh || !dirtMesh || !stoneMesh || !bedrockMesh) return
 
 		const currentChunkX = Math.floor(playerX / chunkSize)
 		const currentChunkZ = Math.floor(playerZ / chunkSize)
@@ -112,6 +118,7 @@
 		let grassIndex = 0
 		let dirtIndex = 0
 		let stoneIndex = 0
+		let bedrockIndex = 0
 
 		const hiddenPosition = { x: 0, y: -1000, z: 0 }
 
@@ -121,6 +128,7 @@
 			grassMesh.setMatrixAt(i, dummy.matrix)
 			dirtMesh.setMatrixAt(i, dummy.matrix)
 			stoneMesh.setMatrixAt(i, dummy.matrix)
+			bedrockMesh.setMatrixAt(i, dummy.matrix)
 		}
 
 		// Renderiza camada de cima
@@ -136,7 +144,9 @@
 				dummy.updateMatrix()
 
 				const material = getBlockMaterial(height)
-				if (material === 'stone') {
+				if (material === 'bedrock') {
+					bedrockMesh.setMatrixAt(bedrockIndex++, dummy.matrix)
+				} else if (material === 'stone') {
 					stoneMesh.setMatrixAt(stoneIndex++, dummy.matrix)
 				} else if (material === 'dirt') {
 					dirtMesh.setMatrixAt(dirtIndex++, dummy.matrix)
@@ -167,7 +177,9 @@
 			dummy.updateMatrix()
 
 			const material = getBlockMaterial(block.y)
-			if (material === 'stone') {
+			if (material === 'bedrock') {
+				bedrockMesh.setMatrixAt(bedrockIndex++, dummy.matrix)
+			} else if (material === 'stone') {
 				stoneMesh.setMatrixAt(stoneIndex++, dummy.matrix)
 			} else if (material === 'dirt') {
 				dirtMesh.setMatrixAt(dirtIndex++, dummy.matrix)
@@ -179,6 +191,7 @@
 		grassMesh.instanceMatrix.needsUpdate = true
 		dirtMesh.instanceMatrix.needsUpdate = true
 		stoneMesh.instanceMatrix.needsUpdate = true
+		bedrockMesh.instanceMatrix.needsUpdate = true
 	}
 
 	$effect(() => {
@@ -205,5 +218,11 @@
 <T.InstancedMesh
 	bind:ref={stoneMesh}
 	args={[geometry, stoneMaterial, totalBlocks]}
+	frustumCulled={false}
+/>
+
+<T.InstancedMesh
+	bind:ref={bedrockMesh}
+	args={[geometry, bedrockMaterial, totalBlocks]}
 	frustumCulled={false}
 />

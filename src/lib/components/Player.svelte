@@ -37,17 +37,18 @@
 	const sensitivity = 0.01
 	const maxRaycastDistance = 8
 	const raycastStep = 0.2
+	const bedrockY = -2
 
 	// Retorna a altura efetiva do chão considerando blocos removidos
 	const getEffectiveHeight = (x: number, z: number): number => {
 		const terrainHeight = getHeight(x, z)
-		// Procura o bloco sólido mais alto na coluna
-		for (let y = terrainHeight; y >= -1; y--) {
-			if (y < 0 || !isBlockRemoved(x, y, z)) {
+		// Procura o bloco sólido mais alto na coluna (até bedrock)
+		for (let y = terrainHeight; y >= bedrockY; y--) {
+			if (y <= bedrockY || !isBlockRemoved(x, y, z)) {
 				return y
 			}
 		}
-		return -1
+		return bedrockY
 	}
 
 	const onKeyDown = (e: KeyboardEvent) => {
@@ -94,8 +95,8 @@
 			const blockY = Math.round(checkY)
 			const terrainHeight = getHeight(blockX, blockZ)
 
-			// Verifica cada bloco na coluna do terreno
-			for (let y = terrainHeight; y >= 0; y--) {
+			// Verifica cada bloco na coluna do terreno (até bedrock)
+			for (let y = terrainHeight; y >= bedrockY; y--) {
 				if (blockY <= y && !isBlockRemoved(blockX, y, blockZ)) {
 					targetBlock = {
 						x: blockX,

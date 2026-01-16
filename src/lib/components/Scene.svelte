@@ -14,6 +14,7 @@
 	const noise2D = createNoise2D()
 	const maxHeight = 6
 	const scale = 0.08
+	const bedrockY = -2
 
 	// Set de blocos removidos: "x,y,z"
 	let removedBlocks = $state(new Set<string>())
@@ -25,6 +26,8 @@
 	}
 
 	const removeBlock = (x: number, y: number, z: number) => {
+		// Não permite remover bedrock
+		if (y <= bedrockY) return
 		removedBlocks = new Set([...removedBlocks, getBlockKey(x, y, z)])
 	}
 
