@@ -3,6 +3,7 @@
 	import Player from './Player.svelte'
 	import Terrain from './Terrain.svelte'
 	import Sun from './Sun.svelte'
+	import Clouds from './Clouds.svelte'
 	import { createNoise2D } from 'simplex-noise'
 	import { Color } from 'three'
 
@@ -28,3 +29,4 @@
 <Player bind:positionX={playerX} bind:positionZ={playerZ} {getHeight} />
 <Terrain playerX={playerX} playerZ={playerZ} {getHeight} />
 <Sun playerX={playerX} playerZ={playerZ} />
+<Clouds playerX={playerX} playerZ={playerZ} />
