@@ -4,6 +4,7 @@
 	import Terrain from './Terrain.svelte'
 	import Sun from './Sun.svelte'
 	import Clouds from './Clouds.svelte'
+	import BlockHighlight from './BlockHighlight.svelte'
 	import { createNoise2D } from 'simplex-noise'
 	import { Color } from 'three'
 
@@ -21,12 +22,14 @@
 
 	let playerX = $state(0)
 	let playerZ = $state(0)
+	let targetBlock: { x: number; y: number; z: number } | null = $state(null)
 </script>
 
 <T.HemisphereLight args={['#ffffff', '#444444', 0.6]} />
 <T.AmbientLight intensity={0.3} />
 
-<Player bind:positionX={playerX} bind:positionZ={playerZ} {getHeight} />
+<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} />
 <Terrain playerX={playerX} playerZ={playerZ} {getHeight} />
 <Sun playerX={playerX} playerZ={playerZ} />
 <Clouds playerX={playerX} playerZ={playerZ} />
+<BlockHighlight {targetBlock} />

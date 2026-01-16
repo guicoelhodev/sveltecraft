@@ -7,9 +7,15 @@
 		positionX?: number
 		positionZ?: number
 		getHeight: (x: number, z: number) => number
+		targetBlock?: { x: number; y: number; z: number } | null
 	}
 
-	let { positionX = $bindable(0), positionZ = $bindable(0), getHeight }: Props = $props()
+	let {
+		positionX = $bindable(0),
+		positionZ = $bindable(0),
+		getHeight,
+		targetBlock = $bindable(null)
+	}: Props = $props()
 
 	const { camera, renderer } = useThrelte()
 
@@ -25,6 +31,8 @@
 	const gravity = 0.02
 	const playerHeight = 1.7
 	const sensitivity = 0.01
+	const maxRaycastDistance = 8
+	const raycastStep = 0.2
 
 	const onKeyDown = (e: KeyboardEvent) => {
 		keys[e.key.toLowerCase()] = true
@@ -48,6 +56,33 @@
 
 	const onPointerLockChange = () => {
 		isLocked = document.pointerLockElement === renderer?.domElement
+	}
+
+	const updateRaycast = (cam: THREE.Camera) => {
+		const direction = new THREE.Vector3()
+		cam.getWorldDirection(direction)
+
+		const rayOrigin = cam.position.clone()
+
+		for (let dist = 0; dist <= maxRaycastDistance; dist += raycastStep) {
+			const checkX = rayOrigin.x + direction.x * dist
+			const checkY = rayOrigin.y + direction.y * dist
+			const checkZ = rayOrigin.z + direction.z * dist
+
+			const blockX = Math.round(checkX)
+			const blockZ = Math.round(checkZ)
+			const terrainHeight = getHeight(blockX, blockZ)
+
+			if (Math.round(checkY) <= terrainHeight) {
+				targetBlock = {
+					x: blockX,
+					y: terrainHeight,
+					z: blockZ
+				}
+				return
+			}
+		}
+		targetBlock = null
 	}
 
 	useTask(() => {
@@ -119,6 +154,8 @@
 
 		positionX = position.x
 		positionZ = position.z
+
+		updateRaycast(cam)
 	})
 
 	onMount(() => {
