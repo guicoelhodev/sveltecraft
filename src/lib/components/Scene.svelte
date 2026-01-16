@@ -21,8 +21,8 @@
 	let playerZ = $state(0)
 </script>
 
-<T.DirectionalLight position={[playerX, 50, playerZ]} intensity={2} />
-<T.AmbientLight intensity={0.6} />
+<T.DirectionalLight position={[playerX, 50, playerZ]} intensity={1} />
+<T.AmbientLight intensity={0.3} />
 
 <Player bind:positionX={playerX} bind:positionZ={playerZ} {getHeight} />
 <Terrain playerX={playerX} playerZ={playerZ} {getHeight} />

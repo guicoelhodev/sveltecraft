@@ -90,9 +90,9 @@
 		const newZ = position.z + moveZ
 
 		const terrainHeightAtNewPos = getHeight(Math.round(newX), Math.round(newZ)) + 1
-		const terrainHeightAtCurrent = getHeight(Math.round(position.x), Math.round(position.z)) + 1
+		const playerFeetY = position.y - playerHeight
 
-		if (terrainHeightAtNewPos <= position.y + 0.5) {
+		if (terrainHeightAtNewPos <= playerFeetY + 0.3) {
 			position.x = newX
 			position.z = newZ
 		}
