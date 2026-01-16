@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
+	import { World } from '@threlte/rapier'
 	import Player from './Player.svelte'
 	import Terrain from './Terrain.svelte'
 
@@ -7,8 +8,10 @@
 	let playerZ = $state(0)
 </script>
 
-<T.DirectionalLight position={[playerX, 50, playerZ]} intensity={2} />
-<T.AmbientLight intensity={0.6} />
+<World gravity={[0, -20, 0]}>
+	<T.DirectionalLight position={[playerX, 50, playerZ]} intensity={2} />
+	<T.AmbientLight intensity={0.6} />
 
-<Player bind:positionX={playerX} bind:positionZ={playerZ} />
-<Terrain playerX={playerX} playerZ={playerZ} />
+	<Player bind:positionX={playerX} bind:positionZ={playerZ} />
+	<Terrain playerX={playerX} playerZ={playerZ} />
+</World>
