@@ -24,7 +24,7 @@
 	const jumpForce = 0.3
 	const gravity = 0.02
 	const playerHeight = 1.7
-	const sensitivity = 0.005
+	const sensitivity = 0.01
 
 	const onKeyDown = (e: KeyboardEvent) => {
 		keys[e.key.toLowerCase()] = true
@@ -77,11 +77,11 @@
 			moveX -= direction.x * speed
 			moveZ -= direction.z * speed
 		}
-		if (keys['a']) {
+		if (keys['d']) {
 			moveX -= sideVector.x * speed
 			moveZ -= sideVector.z * speed
 		}
-		if (keys['d']) {
+		if (keys['a']) {
 			moveX += sideVector.x * speed
 			moveZ += sideVector.z * speed
 		}
