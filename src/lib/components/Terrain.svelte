@@ -14,9 +14,11 @@
 		playerX: number
 		playerZ: number
 		getHeight: (x: number, z: number) => number
+		isBlockRemoved: (x: number, y: number, z: number) => boolean
+		removedBlocks: Set<string>
 	}
 
-	let { playerX, playerZ, getHeight }: Props = $props()
+	let { playerX, playerZ, getHeight, isBlockRemoved, removedBlocks }: Props = $props()
 
 	const chunkSize = 16
 	const renderDistance = 3
@@ -88,6 +90,9 @@
 				const worldZ = startZ + z
 				const height = getHeight(worldX, worldZ)
 
+				// Pula blocos removidos
+				if (isBlockRemoved(worldX, height, worldZ)) continue
+
 				dummy.position.set(worldX, height, worldZ)
 				dummy.updateMatrix()
 
@@ -109,6 +114,7 @@
 	$effect(() => {
 		playerX
 		playerZ
+		removedBlocks
 		updateTerrain()
 	})
 </script>

@@ -8,13 +8,17 @@
 		positionZ?: number
 		getHeight: (x: number, z: number) => number
 		targetBlock?: { x: number; y: number; z: number } | null
+		isBlockRemoved: (x: number, y: number, z: number) => boolean
+		removeBlock: (x: number, y: number, z: number) => void
 	}
 
 	let {
 		positionX = $bindable(0),
 		positionZ = $bindable(0),
 		getHeight,
-		targetBlock = $bindable(null)
+		targetBlock = $bindable(null),
+		isBlockRemoved,
+		removeBlock
 	}: Props = $props()
 
 	const { camera, renderer } = useThrelte()
@@ -51,7 +55,11 @@
 	}
 
 	const onClick = () => {
-		renderer?.domElement.requestPointerLock()
+		if (!isLocked) {
+			renderer?.domElement.requestPointerLock()
+		} else if (targetBlock) {
+			removeBlock(targetBlock.x, targetBlock.y, targetBlock.z)
+		}
 	}
 
 	const onPointerLockChange = () => {
@@ -71,15 +79,19 @@
 
 			const blockX = Math.round(checkX)
 			const blockZ = Math.round(checkZ)
+			const blockY = Math.round(checkY)
 			const terrainHeight = getHeight(blockX, blockZ)
 
-			if (Math.round(checkY) <= terrainHeight) {
-				targetBlock = {
-					x: blockX,
-					y: terrainHeight,
-					z: blockZ
+			// Verifica cada bloco na coluna do terreno
+			for (let y = terrainHeight; y >= 0; y--) {
+				if (blockY <= y && !isBlockRemoved(blockX, y, blockZ)) {
+					targetBlock = {
+						x: blockX,
+						y: y,
+						z: blockZ
+					}
+					return
 				}
-				return
 			}
 		}
 		targetBlock = null

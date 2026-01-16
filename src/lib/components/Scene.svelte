@@ -15,6 +15,19 @@
 	const maxHeight = 6
 	const scale = 0.08
 
+	// Set de blocos removidos: "x,y,z"
+	let removedBlocks = $state(new Set<string>())
+
+	const getBlockKey = (x: number, y: number, z: number) => `${x},${y},${z}`
+
+	const isBlockRemoved = (x: number, y: number, z: number): boolean => {
+		return removedBlocks.has(getBlockKey(x, y, z))
+	}
+
+	const removeBlock = (x: number, y: number, z: number) => {
+		removedBlocks = new Set([...removedBlocks, getBlockKey(x, y, z)])
+	}
+
 	const getHeight = (x: number, z: number): number => {
 		const noiseValue = noise2D(x * scale, z * scale)
 		return Math.floor(((noiseValue + 1) / 2) * maxHeight)
@@ -28,8 +41,8 @@
 <T.HemisphereLight args={['#ffffff', '#444444', 0.6]} />
 <T.AmbientLight intensity={0.3} />
 
-<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} />
-<Terrain playerX={playerX} playerZ={playerZ} {getHeight} />
+<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} {isBlockRemoved} {removeBlock} />
+<Terrain playerX={playerX} playerZ={playerZ} {getHeight} {isBlockRemoved} {removedBlocks} />
 <Sun playerX={playerX} playerZ={playerZ} />
 <Clouds playerX={playerX} playerZ={playerZ} />
 <BlockHighlight {targetBlock} />
