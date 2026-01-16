@@ -10,8 +10,8 @@
 
 	let { playerX, playerZ, getHeight }: Props = $props()
 
-	const chunkSize = 8
-	const renderDistance = 1
+	const chunkSize = 16
+	const renderDistance = 3
 
 	const dummy = new Object3D()
 	const geometry = new BoxGeometry(1, 1, 1)
