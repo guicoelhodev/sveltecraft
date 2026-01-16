@@ -3,15 +3,22 @@
 	import { onMount, onDestroy } from 'svelte'
 	import * as THREE from 'three'
 
+	interface Props {
+		positionX?: number
+		positionZ?: number
+	}
+
+	let { positionX = $bindable(0), positionZ = $bindable(0) }: Props = $props()
+
 	const { camera, renderer } = useThrelte()
 
-	let position = $state({ x: 0, y: 1.7, z: 0 })
+	let position = $state({ x: 0, y: 5, z: 0 })
 	let rotation = $state({ x: 0, y: 0 })
 	let keys: Record<string, boolean> = {}
 	let isLocked = $state(false)
 
-	const speed = 0.1
-	const sensitivity = 0.0050
+	const speed = 0.15
+	const sensitivity = 0.005
 
 	const onKeyDown = (e: KeyboardEvent) => {
 		keys[e.key.toLowerCase()] = true
@@ -71,6 +78,9 @@
 		}
 
 		cam.position.set(position.x, position.y, position.z)
+
+		positionX = position.x
+		positionZ = position.z
 	})
 
 	onMount(() => {
@@ -90,9 +100,4 @@
 	})
 </script>
 
-<T.PerspectiveCamera makeDefault position={[position.x, position.y, position.z]} fov={75} />
-
-<T.Mesh position.x={position.x} position.y={0.5} position.z={position.z}>
-	<T.BoxGeometry args={[1, 1, 1]} />
-	<T.MeshStandardMaterial color="#8B4513" />
-</T.Mesh>
+<T.PerspectiveCamera makeDefault fov={75} />
