@@ -95,16 +95,14 @@
 			const blockY = Math.round(checkY)
 			const terrainHeight = getHeight(blockX, blockZ)
 
-			// Verifica cada bloco na coluna do terreno (até bedrock)
-			for (let y = terrainHeight; y >= bedrockY; y--) {
-				if (blockY <= y && !isBlockRemoved(blockX, y, blockZ)) {
-					targetBlock = {
-						x: blockX,
-						y: y,
-						z: blockZ
-					}
-					return
+			// Verifica se há um bloco sólido nessa posição exata
+			if (blockY >= bedrockY && blockY <= terrainHeight && !isBlockRemoved(blockX, blockY, blockZ)) {
+				targetBlock = {
+					x: blockX,
+					y: blockY,
+					z: blockZ
 				}
+				return
 			}
 		}
 		targetBlock = null
