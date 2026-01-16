@@ -59,7 +59,46 @@
 	let stoneMesh: InstancedMesh | null = $state(null)
 
 	const totalSize = chunkSize * (renderDistance * 2 + 1)
-	const totalBlocks = totalSize * totalSize
+	// Blocos extras para os expostos por remoção
+	const totalBlocks = totalSize * totalSize + 500
+
+	const getBlockMaterial = (y: number): 'grass' | 'dirt' | 'stone' => {
+		if (y <= 1) return 'stone'
+		if (y <= 3) return 'dirt'
+		return 'grass'
+	}
+
+	// Retorna blocos expostos por causa de remoções adjacentes
+	const getExposedBlocks = () => {
+		const exposed: Array<{ x: number; y: number; z: number }> = []
+
+		for (const key of removedBlocks) {
+			const [rx, ry, rz] = key.split(',').map(Number)
+
+			// Bloco abaixo
+			if (ry > 0 && !isBlockRemoved(rx, ry - 1, rz)) {
+				exposed.push({ x: rx, y: ry - 1, z: rz })
+			}
+
+			// Blocos laterais (apenas se estiverem na mesma altura ou abaixo do terreno)
+			const neighbors = [
+				{ x: rx + 1, z: rz },
+				{ x: rx - 1, z: rz },
+				{ x: rx, z: rz + 1 },
+				{ x: rx, z: rz - 1 }
+			]
+
+			for (const n of neighbors) {
+				const neighborHeight = getHeight(n.x, n.z)
+				// Se o vizinho tem bloco nessa altura e não foi removido
+				if (ry <= neighborHeight && !isBlockRemoved(n.x, ry, n.z)) {
+					exposed.push({ x: n.x, y: ry, z: n.z })
+				}
+			}
+		}
+
+		return exposed
+	}
 
 	const updateTerrain = () => {
 		if (!grassMesh || !dirtMesh || !stoneMesh) return
@@ -84,25 +123,56 @@
 			stoneMesh.setMatrixAt(i, dummy.matrix)
 		}
 
+		// Renderiza camada de cima
 		for (let z = 0; z < totalSize; z++) {
 			for (let x = 0; x < totalSize; x++) {
 				const worldX = startX + x
 				const worldZ = startZ + z
 				const height = getHeight(worldX, worldZ)
 
-				// Pula blocos removidos
 				if (isBlockRemoved(worldX, height, worldZ)) continue
 
 				dummy.position.set(worldX, height, worldZ)
 				dummy.updateMatrix()
 
-				if (height <= 1) {
+				const material = getBlockMaterial(height)
+				if (material === 'stone') {
 					stoneMesh.setMatrixAt(stoneIndex++, dummy.matrix)
-				} else if (height <= 3) {
+				} else if (material === 'dirt') {
 					dirtMesh.setMatrixAt(dirtIndex++, dummy.matrix)
 				} else {
 					grassMesh.setMatrixAt(grassIndex++, dummy.matrix)
 				}
+			}
+		}
+
+		// Renderiza blocos expostos por remoção
+		const exposedBlocks = getExposedBlocks()
+		const rendered = new Set<string>()
+
+		for (const block of exposedBlocks) {
+			const key = `${block.x},${block.y},${block.z}`
+			if (rendered.has(key)) continue
+			rendered.add(key)
+
+			// Verifica se está na área visível
+			if (
+				block.x < startX ||
+				block.x >= startX + totalSize ||
+				block.z < startZ ||
+				block.z >= startZ + totalSize
+			) continue
+
+			dummy.position.set(block.x, block.y, block.z)
+			dummy.updateMatrix()
+
+			const material = getBlockMaterial(block.y)
+			if (material === 'stone') {
+				stoneMesh.setMatrixAt(stoneIndex++, dummy.matrix)
+			} else if (material === 'dirt') {
+				dirtMesh.setMatrixAt(dirtIndex++, dummy.matrix)
+			} else {
+				grassMesh.setMatrixAt(grassIndex++, dummy.matrix)
 			}
 		}
 
