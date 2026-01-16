@@ -1,30 +1,21 @@
 <script lang="ts">
 	import { T } from '@threlte/core'
-	import { Collider } from '@threlte/rapier'
-	import { createNoise2D } from 'simplex-noise'
 	import { InstancedMesh, BoxGeometry, MeshStandardMaterial, Object3D, Color } from 'three'
 
 	interface Props {
 		playerX: number
 		playerZ: number
+		getHeight: (x: number, z: number) => number
 	}
 
-	let { playerX, playerZ }: Props = $props()
+	let { playerX, playerZ, getHeight }: Props = $props()
 
-	const noise2D = createNoise2D()
 	const chunkSize = 8
 	const renderDistance = 1
-	const maxHeight = 6
-	const scale = 0.08
 
 	const dummy = new Object3D()
 	const geometry = new BoxGeometry(1, 1, 1)
 	const material = new MeshStandardMaterial({ color: '#228B22' })
-
-	const getHeight = (x: number, z: number): number => {
-		const noiseValue = noise2D(x * scale, z * scale)
-		return Math.floor(((noiseValue + 1) / 2) * maxHeight)
-	}
 
 	let instancedMesh: InstancedMesh | null = $state(null)
 
@@ -79,5 +70,3 @@
 	frustumCulled={false}
 	oncreate={updateTerrain}
 />
-
-<Collider shape="cuboid" args={[500, 1, 500]} position={[0, -1, 0]} />
