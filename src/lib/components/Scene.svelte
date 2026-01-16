@@ -21,7 +21,8 @@
 	let playerZ = $state(0)
 </script>
 
-<T.DirectionalLight position={[playerX, 50, playerZ]} intensity={1} />
+<T.HemisphereLight args={['#ffffff', '#444444', 0.6]} />
+<T.DirectionalLight position={[50, 100, 25]} intensity={0.8} />
 <T.AmbientLight intensity={0.3} />
 
 <Player bind:positionX={playerX} bind:positionZ={playerZ} {getHeight} />
