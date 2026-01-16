@@ -10,11 +10,11 @@
 	let { playerX, playerZ }: Props = $props()
 
 	const cloudHeight = 50
-	const chunkSize = 32
+	const chunkSize = 48
 	const renderDistance = 3
 
 	const dummy = new Object3D()
-	const geometry = new BoxGeometry(4, 1.5, 4)
+	const geometry = new BoxGeometry(4.8, 1.8, 4.8)
 	const material = new MeshBasicMaterial({
 		color: '#ffffff',
 		transparent: true,
@@ -44,8 +44,8 @@
 
 		const matrices: Matrix4[] = []
 
-		// Só 25% dos chunks têm nuvem
-		if (hash(cx, cz, 1) > 0.75) {
+		// Só 15% dos chunks têm nuvem
+		if (hash(cx, cz, 1) > 0.85) {
 			cloudCache.set(key, matrices)
 			return matrices
 		}
@@ -59,7 +59,7 @@
 				const dist = dx * dx + dz * dz
 				const maxDist = cloudSize * cloudSize
 
-				if (dist < maxDist && hash(cx + dx, cz + dz, 50) > 0.3) {
+				if (dist < maxDist && hash(cx + dx, cz + dz, 50) > 0.45) {
 					const matrix = new Matrix4()
 					matrix.setPosition(centerX + dx * 4, cloudHeight, centerZ + dz * 4)
 					matrices.push(matrix)
