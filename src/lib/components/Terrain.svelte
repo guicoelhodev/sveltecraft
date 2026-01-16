@@ -21,7 +21,7 @@
 	let { playerX, playerZ, getHeight, isBlockRemoved, removedBlocks }: Props = $props()
 
 	const chunkSize = 16
-	const renderDistance = 3
+	const renderDistance = 2
 
 	const dummy = new Object3D()
 	const geometry = new BoxGeometry(1, 1, 1)

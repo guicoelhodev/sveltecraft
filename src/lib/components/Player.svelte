@@ -38,6 +38,18 @@
 	const maxRaycastDistance = 8
 	const raycastStep = 0.2
 
+	// Retorna a altura efetiva do chão considerando blocos removidos
+	const getEffectiveHeight = (x: number, z: number): number => {
+		const terrainHeight = getHeight(x, z)
+		// Procura o bloco sólido mais alto na coluna
+		for (let y = terrainHeight; y >= -1; y--) {
+			if (y < 0 || !isBlockRemoved(x, y, z)) {
+				return y
+			}
+		}
+		return -1
+	}
+
 	const onKeyDown = (e: KeyboardEvent) => {
 		keys[e.key.toLowerCase()] = true
 	}
@@ -136,10 +148,10 @@
 		const newX = position.x + moveX
 		const newZ = position.z + moveZ
 
-		const terrainHeightAtNewPos = getHeight(Math.round(newX), Math.round(newZ)) + 1
+		const effectiveHeightAtNewPos = getEffectiveHeight(Math.round(newX), Math.round(newZ)) + 1
 		const playerFeetY = position.y - playerHeight
 
-		if (terrainHeightAtNewPos <= playerFeetY + 0.3) {
+		if (effectiveHeightAtNewPos <= playerFeetY + 0.3) {
 			position.x = newX
 			position.z = newZ
 		}
@@ -147,7 +159,7 @@
 		velocity.y -= gravity
 		position.y += velocity.y
 
-		const groundHeight = getHeight(Math.round(position.x), Math.round(position.z)) + 1 + playerHeight
+		const groundHeight = getEffectiveHeight(Math.round(position.x), Math.round(position.z)) + 1 + playerHeight
 
 		if (position.y <= groundHeight) {
 			position.y = groundHeight
