@@ -13,7 +13,7 @@
 
 	const noise2D = createNoise2D()
 	const maxHeight = 6
-	const scale = 0.08
+	const scale = 0.05
 	const bedrockY = -2
 
 	// Set de blocos removidos: "x,y,z"

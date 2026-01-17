@@ -31,6 +31,7 @@
 	let isGrounded = $state(false)
 
 	const speed = 0.15
+	const sprintMultiplier = 2
 	const jumpForce = 0.3
 	const gravity = 0.02
 	const playerHeight = 1.7
@@ -127,21 +128,24 @@
 		let moveX = 0
 		let moveZ = 0
 
+		const isSprinting = keys['shift']
+		const currentSpeed = isSprinting ? speed * sprintMultiplier : speed
+
 		if (keys['w']) {
-			moveX += direction.x * speed
-			moveZ += direction.z * speed
+			moveX += direction.x * currentSpeed
+			moveZ += direction.z * currentSpeed
 		}
 		if (keys['s']) {
-			moveX -= direction.x * speed
-			moveZ -= direction.z * speed
+			moveX -= direction.x * currentSpeed
+			moveZ -= direction.z * currentSpeed
 		}
 		if (keys['d']) {
-			moveX -= sideVector.x * speed
-			moveZ -= sideVector.z * speed
+			moveX -= sideVector.x * currentSpeed
+			moveZ -= sideVector.z * currentSpeed
 		}
 		if (keys['a']) {
-			moveX += sideVector.x * speed
-			moveZ += sideVector.z * speed
+			moveX += sideVector.x * currentSpeed
+			moveZ += sideVector.z * currentSpeed
 		}
 
 		const newX = position.x + moveX
