@@ -8,6 +8,12 @@
 	import { createNoise2D } from 'simplex-noise'
 	import { Color } from 'three'
 
+	interface Props {
+		selectedBlock: string
+	}
+
+	let { selectedBlock }: Props = $props()
+
 	const { scene } = useThrelte()
 	scene.background = new Color('#84BEE3')
 
@@ -18,6 +24,8 @@
 
 	// Set de blocos removidos: "x,y,z"
 	let removedBlocks = $state(new Set<string>())
+	// Map de blocos adicionados: "x,y,z" -> blockType
+	let addedBlocks = $state(new Map<string, string>())
 
 	const getBlockKey = (x: number, y: number, z: number) => `${x},${y},${z}`
 
@@ -25,10 +33,39 @@
 		return removedBlocks.has(getBlockKey(x, y, z))
 	}
 
+	const isBlockAdded = (x: number, y: number, z: number): boolean => {
+		return addedBlocks.has(getBlockKey(x, y, z))
+	}
+
+	const getAddedBlockType = (x: number, y: number, z: number): string | undefined => {
+		return addedBlocks.get(getBlockKey(x, y, z))
+	}
+
 	const removeBlock = (x: number, y: number, z: number) => {
 		// Não permite remover bedrock
 		if (y <= bedrockY) return
-		removedBlocks = new Set([...removedBlocks, getBlockKey(x, y, z)])
+		const key = getBlockKey(x, y, z)
+		// Se for um bloco adicionado, remove do map de adicionados
+		if (addedBlocks.has(key)) {
+			const newAdded = new Map(addedBlocks)
+			newAdded.delete(key)
+			addedBlocks = newAdded
+		} else {
+			// Se for um bloco do terreno, adiciona ao set de removidos
+			removedBlocks = new Set([...removedBlocks, key])
+		}
+	}
+
+	const placeBlock = (x: number, y: number, z: number, blockType: string) => {
+		const key = getBlockKey(x, y, z)
+		// Se o bloco foi removido antes, tira do set de removidos
+		if (removedBlocks.has(key)) {
+			const newRemoved = new Set(removedBlocks)
+			newRemoved.delete(key)
+			removedBlocks = newRemoved
+		}
+		// Adiciona o bloco
+		addedBlocks = new Map([...addedBlocks, [key, blockType]])
 	}
 
 	const getHeight = (x: number, z: number): number => {
@@ -44,8 +81,8 @@
 <T.HemisphereLight args={['#ffffff', '#444444', 0.6]} />
 <T.AmbientLight intensity={0.3} />
 
-<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} {isBlockRemoved} {removeBlock} />
-<Terrain playerX={playerX} playerZ={playerZ} {getHeight} {isBlockRemoved} {removedBlocks} />
+<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} {isBlockRemoved} {removeBlock} {placeBlock} {selectedBlock} {isBlockAdded} />
+<Terrain playerX={playerX} playerZ={playerZ} {getHeight} {isBlockRemoved} {removedBlocks} {addedBlocks} {getAddedBlockType} />
 <Sun playerX={playerX} playerZ={playerZ} />
 <Clouds playerX={playerX} playerZ={playerZ} />
 <BlockHighlight {targetBlock} />

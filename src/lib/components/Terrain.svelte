@@ -16,9 +16,11 @@
 		getHeight: (x: number, z: number) => number
 		isBlockRemoved: (x: number, y: number, z: number) => boolean
 		removedBlocks: Set<string>
+		addedBlocks: Map<string, string>
+		getAddedBlockType: (x: number, y: number, z: number) => string | undefined
 	}
 
-	let { playerX, playerZ, getHeight, isBlockRemoved, removedBlocks }: Props = $props()
+	let { playerX, playerZ, getHeight, isBlockRemoved, removedBlocks, addedBlocks, getAddedBlockType }: Props = $props()
 
 	const chunkSize = 16
 	const renderDistance = 2
@@ -41,11 +43,19 @@
 	const dirtTexture = loadTexture('/textures/dirt-texture.png')
 	const stoneTexture = loadTexture('/textures/stone-texture.png')
 	const bedrockTexture = loadTexture('/textures/bedrock.png')
+	const cobblestoneTexture = loadTexture('/textures/cobblestone.png')
+	const darkoaklogTexture = loadTexture('/textures/darkoaklog.png')
+	const glassTexture = loadTexture('/textures/glass.png')
+	const woodTexture = loadTexture('/textures/wood.png')
 
 	const grassTopMaterial = new MeshStandardMaterial({ map: grassTexture })
 	const dirtMaterial = new MeshStandardMaterial({ map: dirtTexture })
 	const stoneMaterial = new MeshStandardMaterial({ map: stoneTexture })
 	const bedrockMaterial = new MeshStandardMaterial({ map: bedrockTexture })
+	const cobblestoneMaterial = new MeshStandardMaterial({ map: cobblestoneTexture })
+	const darkoaklogMaterial = new MeshStandardMaterial({ map: darkoaklogTexture })
+	const glassMaterial = new MeshStandardMaterial({ map: glassTexture, transparent: true, opacity: 0.8 })
+	const woodMaterial = new MeshStandardMaterial({ map: woodTexture })
 
 	const grassMaterials = [
 		dirtMaterial,
@@ -60,6 +70,10 @@
 	let dirtMesh: InstancedMesh | null = $state(null)
 	let stoneMesh: InstancedMesh | null = $state(null)
 	let bedrockMesh: InstancedMesh | null = $state(null)
+	let cobblestoneMesh: InstancedMesh | null = $state(null)
+	let darkoaklogMesh: InstancedMesh | null = $state(null)
+	let glassMesh: InstancedMesh | null = $state(null)
+	let woodMesh: InstancedMesh | null = $state(null)
 
 	const bedrockY = -2
 
@@ -107,7 +121,7 @@
 	}
 
 	const updateTerrain = () => {
-		if (!grassMesh || !dirtMesh || !stoneMesh || !bedrockMesh) return
+		if (!grassMesh || !dirtMesh || !stoneMesh || !bedrockMesh || !cobblestoneMesh || !darkoaklogMesh || !glassMesh || !woodMesh) return
 
 		const currentChunkX = Math.floor(playerX / chunkSize)
 		const currentChunkZ = Math.floor(playerZ / chunkSize)
@@ -119,6 +133,10 @@
 		let dirtIndex = 0
 		let stoneIndex = 0
 		let bedrockIndex = 0
+		let cobblestoneIndex = 0
+		let darkoaklogIndex = 0
+		let glassIndex = 0
+		let woodIndex = 0
 
 		const hiddenPosition = { x: 0, y: -1000, z: 0 }
 
@@ -129,6 +147,10 @@
 			dirtMesh.setMatrixAt(i, dummy.matrix)
 			stoneMesh.setMatrixAt(i, dummy.matrix)
 			bedrockMesh.setMatrixAt(i, dummy.matrix)
+			cobblestoneMesh.setMatrixAt(i, dummy.matrix)
+			darkoaklogMesh.setMatrixAt(i, dummy.matrix)
+			glassMesh.setMatrixAt(i, dummy.matrix)
+			woodMesh.setMatrixAt(i, dummy.matrix)
 		}
 
 		// Renderiza camada de cima
@@ -188,16 +210,58 @@
 			}
 		}
 
+		// Renderiza blocos adicionados
+		for (const [key, blockType] of addedBlocks) {
+			const [bx, by, bz] = key.split(',').map(Number)
+
+			// Verifica se está na área visível
+			if (
+				bx < startX ||
+				bx >= startX + totalSize ||
+				bz < startZ ||
+				bz >= startZ + totalSize
+			) continue
+
+			dummy.position.set(bx, by, bz)
+			dummy.updateMatrix()
+
+			switch (blockType) {
+				case 'dirt':
+					dirtMesh.setMatrixAt(dirtIndex++, dummy.matrix)
+					break
+				case 'stone':
+					stoneMesh.setMatrixAt(stoneIndex++, dummy.matrix)
+					break
+				case 'cobblestone':
+					cobblestoneMesh.setMatrixAt(cobblestoneIndex++, dummy.matrix)
+					break
+				case 'darkoaklog':
+					darkoaklogMesh.setMatrixAt(darkoaklogIndex++, dummy.matrix)
+					break
+				case 'glass':
+					glassMesh.setMatrixAt(glassIndex++, dummy.matrix)
+					break
+				case 'wood':
+					woodMesh.setMatrixAt(woodIndex++, dummy.matrix)
+					break
+			}
+		}
+
 		grassMesh.instanceMatrix.needsUpdate = true
 		dirtMesh.instanceMatrix.needsUpdate = true
 		stoneMesh.instanceMatrix.needsUpdate = true
 		bedrockMesh.instanceMatrix.needsUpdate = true
+		cobblestoneMesh.instanceMatrix.needsUpdate = true
+		darkoaklogMesh.instanceMatrix.needsUpdate = true
+		glassMesh.instanceMatrix.needsUpdate = true
+		woodMesh.instanceMatrix.needsUpdate = true
 	}
 
 	$effect(() => {
 		playerX
 		playerZ
 		removedBlocks
+		addedBlocks
 		updateTerrain()
 	})
 </script>
@@ -224,5 +288,29 @@
 <T.InstancedMesh
 	bind:ref={bedrockMesh}
 	args={[geometry, bedrockMaterial, totalBlocks]}
+	frustumCulled={false}
+/>
+
+<T.InstancedMesh
+	bind:ref={cobblestoneMesh}
+	args={[geometry, cobblestoneMaterial, totalBlocks]}
+	frustumCulled={false}
+/>
+
+<T.InstancedMesh
+	bind:ref={darkoaklogMesh}
+	args={[geometry, darkoaklogMaterial, totalBlocks]}
+	frustumCulled={false}
+/>
+
+<T.InstancedMesh
+	bind:ref={glassMesh}
+	args={[geometry, glassMaterial, totalBlocks]}
+	frustumCulled={false}
+/>
+
+<T.InstancedMesh
+	bind:ref={woodMesh}
+	args={[geometry, woodMaterial, totalBlocks]}
 	frustumCulled={false}
 />

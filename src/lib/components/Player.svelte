@@ -9,7 +9,10 @@
 		getHeight: (x: number, z: number) => number
 		targetBlock?: { x: number; y: number; z: number } | null
 		isBlockRemoved: (x: number, y: number, z: number) => boolean
+		isBlockAdded: (x: number, y: number, z: number) => boolean
 		removeBlock: (x: number, y: number, z: number) => void
+		placeBlock: (x: number, y: number, z: number, blockType: string) => void
+		selectedBlock: string
 	}
 
 	let {
@@ -18,7 +21,10 @@
 		getHeight,
 		targetBlock = $bindable(null),
 		isBlockRemoved,
-		removeBlock
+		isBlockAdded,
+		removeBlock,
+		placeBlock,
+		selectedBlock
 	}: Props = $props()
 
 	const { camera, renderer } = useThrelte()
@@ -76,6 +82,53 @@
 		}
 	}
 
+	const onMouseDown = (e: MouseEvent) => {
+		// Botão direito do mouse
+		if (e.button !== 2) return
+		e.preventDefault()
+		
+		if (!isLocked || !targetBlock) return
+
+		// Calcula a posição para colocar o bloco adjacente
+		const cam = $camera
+		if (!cam) return
+
+		const direction = new THREE.Vector3()
+		cam.getWorldDirection(direction)
+
+		// Encontra a face do bloco que foi atingida
+		const rayOrigin = cam.position.clone()
+		let lastEmpty: { x: number; y: number; z: number } | null = null
+
+		for (let dist = 0; dist <= maxRaycastDistance; dist += raycastStep) {
+			const checkX = rayOrigin.x + direction.x * dist
+			const checkY = rayOrigin.y + direction.y * dist
+			const checkZ = rayOrigin.z + direction.z * dist
+
+			const blockX = Math.round(checkX)
+			const blockZ = Math.round(checkZ)
+			const blockY = Math.round(checkY)
+			const terrainHeight = getHeight(blockX, blockZ)
+
+			// Verifica se há um bloco sólido nessa posição
+			const isSolid = (blockY >= bedrockY && blockY <= terrainHeight && !isBlockRemoved(blockX, blockY, blockZ)) || isBlockAdded(blockX, blockY, blockZ)
+
+			if (isSolid) {
+				// Coloca o bloco na última posição vazia
+				if (lastEmpty) {
+					placeBlock(lastEmpty.x, lastEmpty.y, lastEmpty.z, selectedBlock)
+				}
+				return
+			}
+
+			lastEmpty = { x: blockX, y: blockY, z: blockZ }
+		}
+	}
+
+	const onContextMenu = (e: MouseEvent) => {
+		e.preventDefault()
+	}
+
 	const onPointerLockChange = () => {
 		isLocked = document.pointerLockElement === renderer?.domElement
 	}
@@ -96,8 +149,11 @@
 			const blockY = Math.round(checkY)
 			const terrainHeight = getHeight(blockX, blockZ)
 
-			// Verifica se há um bloco sólido nessa posição exata
-			if (blockY >= bedrockY && blockY <= terrainHeight && !isBlockRemoved(blockX, blockY, blockZ)) {
+			// Verifica se há um bloco sólido nessa posição exata (terreno ou adicionado)
+			const isTerrainBlock = blockY >= bedrockY && blockY <= terrainHeight && !isBlockRemoved(blockX, blockY, blockZ)
+			const isAddedBlock = isBlockAdded(blockX, blockY, blockZ)
+
+			if (isTerrainBlock || isAddedBlock) {
 				targetBlock = {
 					x: blockX,
 					y: blockY,
@@ -189,6 +245,8 @@
 		window.addEventListener('keydown', onKeyDown)
 		window.addEventListener('keyup', onKeyUp)
 		window.addEventListener('mousemove', onMouseMove)
+		window.addEventListener('mousedown', onMouseDown)
+		window.addEventListener('contextmenu', onContextMenu)
 		document.addEventListener('pointerlockchange', onPointerLockChange)
 		renderer?.domElement.addEventListener('click', onClick)
 	})
@@ -197,6 +255,8 @@
 		window.removeEventListener('keydown', onKeyDown)
 		window.removeEventListener('keyup', onKeyUp)
 		window.removeEventListener('mousemove', onMouseMove)
+		window.removeEventListener('mousedown', onMouseDown)
+		window.removeEventListener('contextmenu', onContextMenu)
 		document.removeEventListener('pointerlockchange', onPointerLockChange)
 		renderer?.domElement.removeEventListener('click', onClick)
 	})
