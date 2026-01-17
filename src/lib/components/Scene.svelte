@@ -73,6 +73,16 @@
 		return Math.floor(((noiseValue + 1) / 2) * maxHeight)
 	}
 
+	// Verifica se há um bloco sólido em uma posição específica
+	const isSolidBlock = (x: number, y: number, z: number): boolean => {
+		// Bloco adicionado
+		if (isBlockAdded(x, y, z)) return true
+		// Bloco do terreno (não removido)
+		const terrainHeight = getHeight(x, z)
+		if (y >= bedrockY && y <= terrainHeight && !isBlockRemoved(x, y, z)) return true
+		return false
+	}
+
 	let playerX = $state(0)
 	let playerZ = $state(0)
 	let targetBlock: { x: number; y: number; z: number } | null = $state(null)
@@ -81,7 +91,7 @@
 <T.HemisphereLight args={['#ffffff', '#444444', 0.6]} />
 <T.AmbientLight intensity={0.3} />
 
-<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} {isBlockRemoved} {removeBlock} {placeBlock} {selectedBlock} {isBlockAdded} />
+<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} {isBlockRemoved} {removeBlock} {placeBlock} {selectedBlock} {isBlockAdded} {isSolidBlock} />
 <Terrain playerX={playerX} playerZ={playerZ} {getHeight} {isBlockRemoved} {removedBlocks} {addedBlocks} {getAddedBlockType} />
 <Sun playerX={playerX} playerZ={playerZ} />
 <Clouds playerX={playerX} playerZ={playerZ} />

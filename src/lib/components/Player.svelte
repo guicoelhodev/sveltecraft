@@ -10,6 +10,7 @@
 		targetBlock?: { x: number; y: number; z: number } | null
 		isBlockRemoved: (x: number, y: number, z: number) => boolean
 		isBlockAdded: (x: number, y: number, z: number) => boolean
+		isSolidBlock: (x: number, y: number, z: number) => boolean
 		removeBlock: (x: number, y: number, z: number) => void
 		placeBlock: (x: number, y: number, z: number, blockType: string) => void
 		selectedBlock: string
@@ -22,6 +23,7 @@
 		targetBlock = $bindable(null),
 		isBlockRemoved,
 		isBlockAdded,
+		isSolidBlock,
 		removeBlock,
 		placeBlock,
 		selectedBlock
@@ -46,12 +48,13 @@
 	const raycastStep = 0.2
 	const bedrockY = -2
 
-	// Retorna a altura efetiva do chão considerando blocos removidos
+	const maxBuildHeight = 50
+
+	// Retorna a altura efetiva do chão considerando blocos removidos e adicionados
 	const getEffectiveHeight = (x: number, z: number): number => {
-		const terrainHeight = getHeight(x, z)
-		// Procura o bloco sólido mais alto na coluna (até bedrock)
-		for (let y = terrainHeight; y >= bedrockY; y--) {
-			if (y <= bedrockY || !isBlockRemoved(x, y, z)) {
+		// Procura o bloco sólido mais alto na coluna (do topo até bedrock)
+		for (let y = maxBuildHeight; y >= bedrockY; y--) {
+			if (isSolidBlock(x, y, z)) {
 				return y
 			}
 		}
