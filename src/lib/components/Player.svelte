@@ -44,6 +44,7 @@
 	const gravity = 0.02
 	const playerHeight = 1.7
 	const sensitivity = 0.01
+	const targetFps = 60
 	const maxRaycastDistance = 8
 	const raycastStep = 0.2
 	const bedrockY = -2
@@ -168,9 +169,11 @@
 		targetBlock = null
 	}
 
-	useTask(() => {
+	useTask((delta) => {
 		const cam = $camera
 		if (!cam) return
+
+		const frameScale = delta * targetFps
 
 		cam.rotation.order = 'YXZ'
 		cam.rotation.x = rotation.x
@@ -191,20 +194,20 @@
 		const currentSpeed = isSprinting ? speed * sprintMultiplier : speed
 
 		if (keys['w']) {
-			moveX += direction.x * currentSpeed
-			moveZ += direction.z * currentSpeed
+			moveX += direction.x * currentSpeed * frameScale
+			moveZ += direction.z * currentSpeed * frameScale
 		}
 		if (keys['s']) {
-			moveX -= direction.x * currentSpeed
-			moveZ -= direction.z * currentSpeed
+			moveX -= direction.x * currentSpeed * frameScale
+			moveZ -= direction.z * currentSpeed * frameScale
 		}
 		if (keys['d']) {
-			moveX -= sideVector.x * currentSpeed
-			moveZ -= sideVector.z * currentSpeed
+			moveX -= sideVector.x * currentSpeed * frameScale
+			moveZ -= sideVector.z * currentSpeed * frameScale
 		}
 		if (keys['a']) {
-			moveX += sideVector.x * currentSpeed
-			moveZ += sideVector.z * currentSpeed
+			moveX += sideVector.x * currentSpeed * frameScale
+			moveZ += sideVector.z * currentSpeed * frameScale
 		}
 
 		const newX = position.x + moveX
@@ -218,8 +221,8 @@
 			position.z = newZ
 		}
 
-		velocity.y -= gravity
-		position.y += velocity.y
+		velocity.y -= gravity * frameScale
+		position.y += velocity.y * frameScale
 
 		const groundHeight = getEffectiveHeight(Math.round(position.x), Math.round(position.z)) + 1 + playerHeight
 
