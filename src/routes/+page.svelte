@@ -12,6 +12,8 @@
 
 	const handlePlay = () => {
 		gameStarted = true
+		const canvas = document.querySelector('canvas')
+		canvas?.requestPointerLock()
 	}
 </script>
 
@@ -19,7 +21,7 @@
 	<StartScreen {isLoaded} onPlay={handlePlay} />
 {/if}
 
-<div class="h-screen w-screen" class:invisible={!gameStarted}>
+<div class="h-screen w-screen">
 	<Canvas>
 		<Scene {selectedBlock} bind:isLoaded />
 	</Canvas>
