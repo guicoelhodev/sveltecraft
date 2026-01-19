@@ -14,6 +14,7 @@
 		removeBlock: (x: number, y: number, z: number) => void
 		placeBlock: (x: number, y: number, z: number, blockType: string) => void
 		selectedBlock: string
+		sensitivity?: number
 	}
 
 	let {
@@ -26,7 +27,8 @@
 		isSolidBlock,
 		removeBlock,
 		placeBlock,
-		selectedBlock
+		selectedBlock,
+		sensitivity = 0.002
 	}: Props = $props()
 
 	const { camera, renderer } = useThrelte()
@@ -43,7 +45,6 @@
 	const jumpForce = 0.3
 	const gravity = 0.02
 	const playerHeight = 1.7
-	const sensitivity = 0.01
 	const targetFps = 60
 	const maxRaycastDistance = 8
 	const raycastStep = 0.2

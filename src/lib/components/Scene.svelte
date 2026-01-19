@@ -11,9 +11,10 @@
 	interface Props {
 		selectedBlock: string
 		isLoaded?: boolean
+		sensitivity?: number
 	}
 
-	let { selectedBlock, isLoaded = $bindable(false) }: Props = $props()
+	let { selectedBlock, isLoaded = $bindable(false), sensitivity = 0.002 }: Props = $props()
 
 	const { scene } = useThrelte()
 	scene.background = new Color('#84BEE3')
@@ -92,7 +93,7 @@
 <T.HemisphereLight args={['#ffffff', '#444444', 0.6]} />
 <T.AmbientLight intensity={0.3} />
 
-<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} {isBlockRemoved} {removeBlock} {placeBlock} {selectedBlock} {isBlockAdded} {isSolidBlock} />
+<Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} {isBlockRemoved} {removeBlock} {placeBlock} {selectedBlock} {isBlockAdded} {isSolidBlock} {sensitivity} />
 <Terrain playerX={playerX} playerZ={playerZ} {getHeight} {isBlockRemoved} {removedBlocks} {addedBlocks} {getAddedBlockType} bind:isLoaded />
 <Sun playerX={playerX} playerZ={playerZ} />
 <Clouds playerX={playerX} playerZ={playerZ} />
