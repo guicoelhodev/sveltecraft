@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte'
 	import coverImage from '$lib/assets/svelte_craft.png'
 
 	interface Props {
@@ -9,6 +10,21 @@
 	let { isLoaded, onPlay }: Props = $props()
 
 	const githubUrl = 'https://github.com/guicoelhodev/sveltecraft'
+
+	let isMobile = $state(false)
+
+	onMount(() => {
+		const checkMobile = () => {
+			const hasTouchScreen = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+			const isSmallScreen = window.innerWidth < 768
+			isMobile = hasTouchScreen || isSmallScreen
+		}
+		checkMobile()
+		window.addEventListener('resize', checkMobile)
+		return () => window.removeEventListener('resize', checkMobile)
+	})
+
+	const canPlay = $derived(isLoaded && !isMobile)
 </script>
 
 <svelte:head>
@@ -25,15 +41,21 @@
 		<img src={coverImage} alt="SvelteCraft" class="pixelated h-auto w-[90vw] max-w-[600px]" />
 
 		<div class="flex w-full max-w-[300px] flex-col gap-4">
+			{#if isMobile}
+				<div class="mc-panel border-3 border-black px-4 py-3 text-center text-xs leading-relaxed text-white">
+					Este protótipo está disponível apenas para computador devido ao uso do teclado.
+				</div>
+			{/if}
+
 			<button
 				class="mc-btn cursor-pointer border-3 border-black px-8 py-4 text-center text-sm text-white transition-[filter] duration-100 disabled:cursor-not-allowed disabled:opacity-60"
 				onclick={onPlay}
-				disabled={!isLoaded}
+				disabled={!canPlay}
 			>
-				{#if isLoaded}
-					Jogar
-				{:else}
+				{#if !isLoaded}
 					<span class="animate-pulse">Carregando...</span>
+				{:else}
+					Jogar
 				{/if}
 			</button>
 
@@ -77,5 +99,16 @@
 
 	.mc-btn-secondary:hover {
 		background: linear-gradient(180deg, #6a6a6a 0%, #505050 50%, #3d3d3d 50%, #4a4a4a 100%);
+	}
+
+	.mc-panel {
+		font-family: 'Press Start 2P', monospace;
+		background: linear-gradient(180deg, #8b0000 0%, #5c0000 50%, #3d0000 50%, #4a0000 100%);
+		box-shadow:
+			inset 2px 2px 0 rgba(255, 255, 255, 0.2),
+			inset -2px -2px 0 rgba(0, 0, 0, 0.3);
+		text-shadow:
+			2px 2px 0 #3f0000,
+			-1px -1px 0 #3f0000;
 	}
 </style>
