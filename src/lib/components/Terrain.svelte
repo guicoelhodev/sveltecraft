@@ -18,9 +18,10 @@
 		removedBlocks: Set<string>
 		addedBlocks: Map<string, string>
 		getAddedBlockType: (x: number, y: number, z: number) => string | undefined
+		isLoaded?: boolean
 	}
 
-	let { playerX, playerZ, getHeight, isBlockRemoved, removedBlocks, addedBlocks, getAddedBlockType }: Props = $props()
+	let { playerX, playerZ, getHeight, isBlockRemoved, removedBlocks, addedBlocks, getAddedBlockType, isLoaded = $bindable(false) }: Props = $props()
 
 	const chunkSize = 16
 	const renderDistance = 2
@@ -30,7 +31,36 @@
 
 	const textureLoader = new TextureLoader()
 
-	const loadTexture = (path: string) => {
+	const loadTexture = (path: string): Promise<typeof grassTexture> => {
+		return new Promise((resolve) => {
+			const texture = textureLoader.load(path, () => {
+				resolve(texture)
+			})
+			texture.magFilter = NearestFilter
+			texture.minFilter = NearestFilter
+			texture.wrapS = RepeatWrapping
+			texture.wrapT = RepeatWrapping
+		})
+	}
+
+	const texturePaths = [
+		'/textures/grass-texture.jpg',
+		'/textures/dirt-texture.png',
+		'/textures/stone-texture.png',
+		'/textures/bedrock.png',
+		'/textures/cobblestone.png',
+		'/textures/darkoaklog.png',
+		'/textures/glass.png',
+		'/textures/wood.png'
+	]
+
+	const texturePromises = texturePaths.map(loadTexture)
+
+	Promise.all(texturePromises).then(() => {
+		isLoaded = true
+	})
+
+	const loadTextureSync = (path: string) => {
 		const texture = textureLoader.load(path)
 		texture.magFilter = NearestFilter
 		texture.minFilter = NearestFilter
@@ -39,14 +69,14 @@
 		return texture
 	}
 
-	const grassTexture = loadTexture('/textures/grass-texture.jpg')
-	const dirtTexture = loadTexture('/textures/dirt-texture.png')
-	const stoneTexture = loadTexture('/textures/stone-texture.png')
-	const bedrockTexture = loadTexture('/textures/bedrock.png')
-	const cobblestoneTexture = loadTexture('/textures/cobblestone.png')
-	const darkoaklogTexture = loadTexture('/textures/darkoaklog.png')
-	const glassTexture = loadTexture('/textures/glass.png')
-	const woodTexture = loadTexture('/textures/wood.png')
+	const grassTexture = loadTextureSync('/textures/grass-texture.jpg')
+	const dirtTexture = loadTextureSync('/textures/dirt-texture.png')
+	const stoneTexture = loadTextureSync('/textures/stone-texture.png')
+	const bedrockTexture = loadTextureSync('/textures/bedrock.png')
+	const cobblestoneTexture = loadTextureSync('/textures/cobblestone.png')
+	const darkoaklogTexture = loadTextureSync('/textures/darkoaklog.png')
+	const glassTexture = loadTextureSync('/textures/glass.png')
+	const woodTexture = loadTextureSync('/textures/wood.png')
 
 	const grassTopMaterial = new MeshStandardMaterial({ map: grassTexture })
 	const dirtMaterial = new MeshStandardMaterial({ map: dirtTexture })

@@ -10,9 +10,10 @@
 
 	interface Props {
 		selectedBlock: string
+		isLoaded?: boolean
 	}
 
-	let { selectedBlock }: Props = $props()
+	let { selectedBlock, isLoaded = $bindable(false) }: Props = $props()
 
 	const { scene } = useThrelte()
 	scene.background = new Color('#84BEE3')
@@ -92,7 +93,7 @@
 <T.AmbientLight intensity={0.3} />
 
 <Player bind:positionX={playerX} bind:positionZ={playerZ} bind:targetBlock {getHeight} {isBlockRemoved} {removeBlock} {placeBlock} {selectedBlock} {isBlockAdded} {isSolidBlock} />
-<Terrain playerX={playerX} playerZ={playerZ} {getHeight} {isBlockRemoved} {removedBlocks} {addedBlocks} {getAddedBlockType} />
+<Terrain playerX={playerX} playerZ={playerZ} {getHeight} {isBlockRemoved} {removedBlocks} {addedBlocks} {getAddedBlockType} bind:isLoaded />
 <Sun playerX={playerX} playerZ={playerZ} />
 <Clouds playerX={playerX} playerZ={playerZ} />
 <BlockHighlight {targetBlock} />
