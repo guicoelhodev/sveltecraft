@@ -83,13 +83,6 @@
 
 	const placeBlock = (x: number, y: number, z: number, blockType: string) => {
 		const key = getBlockKey(x, y, z)
-		// Se o bloco foi removido antes, tira do set de removidos
-		if (removedBlocks.has(key)) {
-			const newRemoved = new Set(removedBlocks)
-			newRemoved.delete(key)
-			removedBlocks = newRemoved
-		}
-		// Adiciona o bloco
 		addedBlocks = new Map([...addedBlocks, [key, blockType]])
 	}
 

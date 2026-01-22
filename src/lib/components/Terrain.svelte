@@ -190,6 +190,7 @@
 				const height = getHeight(worldX, worldZ)
 
 				if (isBlockRemoved(worldX, height, worldZ)) continue
+				if (addedBlocks.has(`${worldX},${height},${worldZ}`)) continue
 
 				dummy.position.set(worldX, height, worldZ)
 				dummy.updateMatrix()
@@ -214,6 +215,7 @@
 		for (const block of exposedBlocks) {
 			const key = `${block.x},${block.y},${block.z}`
 			if (rendered.has(key)) continue
+			if (addedBlocks.has(key)) continue
 			rendered.add(key)
 
 			// Verifica se está na área visível
