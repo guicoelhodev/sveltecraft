@@ -20,9 +20,32 @@
 	scene.background = new Color('#84BEE3')
 
 	const noise2D = createNoise2D()
-	const maxHeight = 6
-	const scale = 0.05
-	const bedrockY = -2
+	const bedrockY = -10
+
+	const terrainConfig = {
+		baseScale: 0.008,
+		octaves: 6,
+		persistence: 0.5,
+		lacunarity: 2.0,
+		heightMultiplier: 32,
+		seaLevel: 0
+	}
+
+	const fbm = (x: number, z: number): number => {
+		let total = 0
+		let frequency = terrainConfig.baseScale
+		let amplitude = 1
+		let maxValue = 0
+
+		for (let i = 0; i < terrainConfig.octaves; i++) {
+			total += noise2D(x * frequency, z * frequency) * amplitude
+			maxValue += amplitude
+			amplitude *= terrainConfig.persistence
+			frequency *= terrainConfig.lacunarity
+		}
+
+		return total / maxValue
+	}
 
 	// Set de blocos removidos: "x,y,z"
 	let removedBlocks = $state(new Set<string>())
@@ -71,8 +94,10 @@
 	}
 
 	const getHeight = (x: number, z: number): number => {
-		const noiseValue = noise2D(x * scale, z * scale)
-		return Math.floor(((noiseValue + 1) / 2) * maxHeight)
+		const noiseValue = fbm(x, z)
+		const normalizedNoise = (noiseValue + 1) / 2
+		const height = Math.floor(normalizedNoise * terrainConfig.heightMultiplier)
+		return Math.max(bedrockY + 1, height)
 	}
 
 	// Verifica se há um bloco sólido em uma posição específica

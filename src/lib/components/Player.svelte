@@ -33,7 +33,7 @@
 
 	const { camera, renderer } = useThrelte()
 
-	let position = $state({ x: 0, y: 10, z: 0 })
+	let position = $state({ x: 0, y: 40, z: 0 })
 	let velocity = $state({ x: 0, y: 0, z: 0 })
 	let rotation = $state({ x: 0, y: 0 })
 	let keys: Record<string, boolean> = {}
@@ -48,9 +48,9 @@
 	const targetFps = 60
 	const maxRaycastDistance = 8
 	const raycastStep = 0.2
-	const bedrockY = -2
+	const bedrockY = -10
 
-	const maxBuildHeight = 50
+	const maxBuildHeight = 64
 
 	// Retorna a altura efetiva do chão considerando blocos removidos e adicionados
 	const getEffectiveHeight = (x: number, z: number): number => {

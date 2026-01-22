@@ -105,17 +105,16 @@
 	let glassMesh: InstancedMesh | null = $state(null)
 	let woodMesh: InstancedMesh | null = $state(null)
 
-	const bedrockY = -2
+	const bedrockY = -10
 
 	const totalSize = chunkSize * (renderDistance * 2 + 1)
-	// Blocos extras para os expostos por remoção
 	const totalBlocks = totalSize * totalSize + 500
 
-	const getBlockMaterial = (y: number): 'grass' | 'dirt' | 'stone' | 'bedrock' => {
+	const getBlockMaterial = (y: number, surfaceHeight: number): 'grass' | 'dirt' | 'stone' | 'bedrock' => {
 		if (y <= bedrockY) return 'bedrock'
-		if (y <= 1) return 'stone'
-		if (y <= 3) return 'dirt'
-		return 'grass'
+		if (y === surfaceHeight) return 'grass'
+		if (y >= surfaceHeight - 3) return 'dirt'
+		return 'stone'
 	}
 
 	// Retorna blocos expostos por causa de remoções adjacentes
@@ -195,7 +194,7 @@
 				dummy.position.set(worldX, height, worldZ)
 				dummy.updateMatrix()
 
-				const material = getBlockMaterial(height)
+				const material = getBlockMaterial(height, height)
 				if (material === 'bedrock') {
 					bedrockMesh.setMatrixAt(bedrockIndex++, dummy.matrix)
 				} else if (material === 'stone') {
@@ -225,10 +224,11 @@
 				block.z >= startZ + totalSize
 			) continue
 
+			const surfaceHeight = getHeight(block.x, block.z)
 			dummy.position.set(block.x, block.y, block.z)
 			dummy.updateMatrix()
 
-			const material = getBlockMaterial(block.y)
+			const material = getBlockMaterial(block.y, surfaceHeight)
 			if (material === 'bedrock') {
 				bedrockMesh.setMatrixAt(bedrockIndex++, dummy.matrix)
 			} else if (material === 'stone') {
